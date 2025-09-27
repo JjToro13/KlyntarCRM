@@ -1,35 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import Login from "./pages/Login";
+import { api } from "./lib/api";
+import type { MeResponse } from "./lib/auth";
+import { clearToken, getToken } from "./lib/auth";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [me, setMe] = useState<MeResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchMe() {
+    try {
+      const data = await api<MeResponse>("/me");
+      setMe(data);
+    } catch {
+      setMe(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    const token = getToken();
+    if (token) fetchMe();
+    else setLoading(false);
+  }, []);
+
+  if (loading) return <p style={{ padding: 24 }}>Cargando…</p>;
+  if (!me) return <Login onLoggedIn={fetchMe} />;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+    <div style={{ padding: 24 }}>
+      <h1 style={{ fontSize: 48, margin: "24px 0" }}>KlyntarCRM</h1>
+      <p>
+        Bienvenido, <strong>{me.firstName || "Usuario"}</strong> ({me.email}) —
+        Rol: <b>{me.role}</b>
       </p>
-    </>
-  )
+      <button
+        onClick={() => {
+          clearToken();
+          setMe(null);
+        }}
+        style={{ marginTop: 12 }}
+      >
+        Cerrar sesión
+      </button>
+      <hr style={{ margin: "24px 0" }} />
+      <p>
+        🔒 Esta sección solo aparece si el token es válido (respuesta de{" "}
+        <code>/me</code>).
+      </p>
+    </div>
+  );
 }
-
-export default App
