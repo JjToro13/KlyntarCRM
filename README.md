@@ -40,12 +40,16 @@ cd KlyntarCRM
 pnpm install
 ```
 
-3. Configurar variables de entorno en `backend/.env`:
+3. Configurar variables de entorno en `backend/.env` y en `frontend/.env` :
 
 ```ini
 DATABASE_URL="file:./dev.db"
 JWT_SECRET="klyntar-super-secreto"
 PORT=3001
+```
+
+```ini
+VITE_API_URL=http://localhost:3001
 ```
 
 ---
@@ -142,10 +146,10 @@ pnpm dev
 
 ---
 
-## 📌 Próximos pasos
+## 📌 Avance actual
 
-- [ ] Conectar frontend al backend (pantalla de login).
-- [ ] CRUD de usuarios/agentes desde API.
+- [X] Conectar frontend al backend (pantalla de login).
+- [X] CRUD de usuarios/agentes desde API.
 - [ ] Gestión de leads con importación de CSV.
 - [ ] Reglas de reparto de leads a agentes.
 - [ ] Panel admin + panel agente.
