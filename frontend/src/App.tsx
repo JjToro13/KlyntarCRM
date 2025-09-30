@@ -1,8 +1,14 @@
+// frontend/src/App.tsx
 import { useEffect, useState } from "react";
-import Login from "./pages/Login";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { api } from "./lib/api";
 import type { MeResponse } from "./lib/auth";
 import { clearToken, getToken } from "./lib/auth";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Agents from "./pages/Agents";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Nav from "./components/Nav";
 
 export default function App() {
   const [me, setMe] = useState<MeResponse | null>(null);
@@ -10,8 +16,7 @@ export default function App() {
 
   async function fetchMe() {
     try {
-      const data = await api<MeResponse>("/me");
-      setMe(data);
+      setMe(await api<MeResponse>("/me"));
     } catch {
       setMe(null);
     } finally {
@@ -26,29 +31,60 @@ export default function App() {
   }, []);
 
   if (loading) return <p style={{ padding: 24 }}>Cargando…</p>;
-  if (!me) return <Login onLoggedIn={fetchMe} />;
 
   return (
-    <div style={{ padding: 24 }}>
-      <h1 style={{ fontSize: 48, margin: "24px 0" }}>KlyntarCRM</h1>
-      <p>
-        Bienvenido, <strong>{me.firstName || "Usuario"}</strong> ({me.email}) —
-        Rol: <b>{me.role}</b>
-      </p>
-      <button
-        onClick={() => {
-          clearToken();
-          setMe(null);
-        }}
-        style={{ marginTop: 12 }}
-      >
-        Cerrar sesión
-      </button>
-      <hr style={{ margin: "24px 0" }} />
-      <p>
-        🔒 Esta sección solo aparece si el token es válido (respuesta de{" "}
-        <code>/me</code>).
-      </p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            getToken() ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login onLoggedIn={fetchMe} />
+            )
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <div>
+                <Nav />
+                <Dashboard me={me!} />
+                <div style={{ padding: "0 24px 24px" }}>
+                  <button
+                    onClick={() => {
+                      clearToken();
+                      setMe(null);
+                      location.href = "/login";
+                    }}
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agents"
+          element={
+            <ProtectedRoute>
+              <div>
+                <Nav />
+                <Agents />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={<Navigate to={me ? "/dashboard" : "/login"} replace />}
+        />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

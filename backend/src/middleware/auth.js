@@ -1,3 +1,4 @@
+// backend/src/middleware/auth.js
 import jwt from "jsonwebtoken";
 
 export function authRequired(req, res, next) {
@@ -14,3 +15,4 @@ export function authRequired(req, res, next) {
     return res.status(401).json({ error: "Token inválido" });
   }
 }
+

@@ -1,9 +1,13 @@
+// backend/src/index.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { PrismaClient } from "@prisma/client";
 import authRoutes from "./auth.js";
+import agentsRoutes from "./agents.js";
+
+import { PrismaClient } from "@prisma/client";
 import { authRequired } from "./middleware/auth.js";
+import { authorizeRoles } from "./middleware/authorize.js";
 
 dotenv.config();
 const app = express();
@@ -17,6 +21,9 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 
 // auth
 app.use("/auth", authRoutes);
+
+// 🔒 /agents sólo para ADMIN y SUPERVISOR
+app.use("/agents", authRequired, authorizeRoles("ADMIN", "SUPERVISOR"), agentsRoutes);
 
 // ruta protegida de ejemplo
 app.get("/me", authRequired, async (req, res) => {

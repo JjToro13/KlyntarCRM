@@ -1,3 +1,4 @@
+// backend/src/seed-admin.js
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
