@@ -6,6 +6,7 @@ export default function Nav() {
     <nav style={{ display: "flex", gap: 12, padding: "12px 24px", borderBottom: "1px solid #333" }}>
       <Link to="/dashboard">Dashboard</Link>
       <Link to="/agents">Agentes</Link>
+      <Link to="/leads">Leads</Link> {/* 👈 nuevo */}
     </nav>
   );
 }

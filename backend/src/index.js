@@ -1,9 +1,11 @@
 // backend/src/index.js
-import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
 import authRoutes from "./auth.js";
+import leadsRoutes from "./leads.js";
 import agentsRoutes from "./agents.js";
+import leadsImportRoutes from "./leads-import.js";
 
 import { PrismaClient } from "@prisma/client";
 import { authRequired } from "./middleware/auth.js";
@@ -22,8 +24,23 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 // auth
 app.use("/auth", authRoutes);
 
+// Leads:
+// - ADMIN/SUPERVISOR: pueden listar/crear/editar/borrar todos
+// - AGENT: puede listar solo los suyos con ?mine=1
+app.use(
+  "/leads",
+  authRequired,
+  authorizeRoles("ADMIN", "SUPERVISOR", "AGENT"),
+  leadsRoutes
+);
+
 // 🔒 /agents sólo para ADMIN y SUPERVISOR
-app.use("/agents", authRequired, authorizeRoles("ADMIN", "SUPERVISOR"), agentsRoutes);
+app.use(
+  "/agents",
+  authRequired,
+  authorizeRoles("ADMIN", "SUPERVISOR"),
+  agentsRoutes
+);
 
 // ruta protegida de ejemplo
 app.get("/me", authRequired, async (req, res) => {
@@ -33,6 +50,13 @@ app.get("/me", authRequired, async (req, res) => {
   const { password, ...safe } = user;
   res.json(safe);
 });
+
+app.use(
+  "/leads/import",
+  authRequired,
+  authorizeRoles("ADMIN", "SUPERVISOR"),
+  leadsImportRoutes
+);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`API lista en http://localhost:${PORT}`));
