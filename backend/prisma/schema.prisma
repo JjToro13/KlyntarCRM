@@ -10,16 +10,47 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  password  String   // hash bcrypt
+  password  String
   firstName String?
   lastName  String?
   role      Role     @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  leads     Lead[]
 }
 
 enum Role {
   ADMIN
   SUPERVISOR
   AGENT
+}
+
+model Lead {
+  id            String     @id @default(cuid())
+  email         String?
+  phone         String?
+  firstName     String?
+  lastName      String?
+  country       String?
+  source        String?
+  funnel        String?
+  depositAmount Float?
+  netDeposit    Float?
+  userBalance   Float?
+  status        LeadStatus @default(NEW)
+
+  agentId   String?
+  agent     User?      @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DISQUALIFIED
+  CLOSED_WON
+  CLOSED_LOST
 }
